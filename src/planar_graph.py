@@ -7,6 +7,7 @@ import queue as q
 import time
 
 
+
 class PlanarTriangulation():
     def __init__(self, area_matrix: np.ndarray):
         self._area_matrix = area_matrix.copy()
@@ -51,18 +52,14 @@ class PlanarTriangulation():
             for j in range(area_matrix.shape[1]):
                 lb += str(area_matrix[i][j]) + " "
             lb += "]"
-            #print(lb)
             labels[i] = lb
-            #print(f'area_matrix[{i}]={area_matrix[i]}')
         labels[area_matrix.shape[0]] = " [ out ] "
-        #print("labels", labels)
         return Graph(cubic_adj_m), labels
 
     def insert_vertex(area_matrix: np.ndarray) -> np.ndarray:
         areas = area_matrix.shape[0]
         vertices = int((areas + 5)/2)
         insertion = random.randint(0, areas-1)
-        #print("Inserting: ", insertion)
         vertex1, vertex2, vertex3 = area_matrix[insertion][0], area_matrix[insertion][1], area_matrix[insertion][2]
 
         area_matrix[insertion] = [vertex1, vertex2, vertices]
@@ -89,13 +86,10 @@ class PlanarTriangulation():
         random_area = area_matrix[row1]
         tmp = random.randint(0, 2)
         vertex1 = random_area[tmp]
-        # vertex2 = np.random.choice(np.delete(random_area, np.where(random_area == vertex1)))
-        # print(random_area, vertex1, vertex2)
         if tmp == 2:
             vertex2 = random_area[0]
         else:
             vertex2 = random_area[tmp+1]
-        # #print(vertex1, vertex2)
         i1 = np.where(np.any(area_matrix == vertex1, axis=1)) 
         i2 = np.where(np.any(area_matrix == vertex2, axis=1))
         common_edge = set(i1[0]).intersection(i2[0])
@@ -166,6 +160,25 @@ class PlanarTriangulation():
                 area_m)
         return PlanarTriangulation(area_m)
         
+    @staticmethod  
+    def sweep_from_file(graph_pth_in, graph_pth_out) -> None:
+        with open('data/graphs/'+ graph_pth_in +'.npy', 'rb') as f:
+            area_m = np.load(f)
+        plg = PlanarTriangulation(area_m)
+        plg.sweep()
+        with open('data/graphs/'+ graph_pth_out +'.npy', 'wb') as f:
+                np.save(f, plg._area_matrix)
+        return plg
+                
+    @staticmethod  
+    def find_cubic_from_file(graph_pth_in):
+        with open('data/graphs/'+ graph_pth_in +'.npy', 'rb') as f:
+            area_m = np.load(f)
+        plg = PlanarTriangulation(area_m)
+        g, t = plg.find_cubic_dual_to_triangulation()
+        return g, t
+        
+        
     @staticmethod
     def area_matrix_to_adjacency_matrix(area_matrix: np.ndarray) -> np.ndarray:
         areas = area_matrix.shape[0]
@@ -185,7 +198,7 @@ class PlanarTriangulation():
         return adjacency_matrix
 
     @staticmethod
-    def random_planar_triangulation(number_f_nodes) -> PlanarTriangulation:
+    def random_planar_triangulation(number_f_nodes, save_name: str | None = None) -> PlanarTriangulation:
         
         area_matrix = np.array([[0, 1, 2],
                                 [0, 2, 3],
@@ -193,16 +206,17 @@ class PlanarTriangulation():
         
         area_matrix = PlanarTriangulation.grow_triangulation(
             area_matrix, number_f_nodes)
+        if save_name:
+            with open('data/graphs/'+ save_name +'.npy', 'wb') as f:
+                np.save(f, area_matrix)
         return PlanarTriangulation(area_matrix)
 
     def number_of_neighbours(self):
         adj_m = self.to_adjacency_matrix()
         neigh_num = np.zeros(adj_m.shape[0], np.intc)
-        #histogram = np.zeros(adj_m.shape[0])
         for i in range(adj_m.shape[0]):
             for j in range(adj_m.shape[0]):
                 neigh_num[i] += adj_m[i][j]
-        #bin_edges = np.round(bin_edges,0)
         return neigh_num
     
         

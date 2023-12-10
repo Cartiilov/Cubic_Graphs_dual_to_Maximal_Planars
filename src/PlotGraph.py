@@ -10,25 +10,26 @@ import math
 
 
 def plot_graph(
-    graph: Graph, name, labels_dict: dict | None = None, sp: Graph | None = None
+    graph: Graph, name, labels_dict: dict | None = None
 ):
 
     g = nx.from_numpy_array(graph.to_adjacency_matrix())
-    # if sp is not None:
-    #     s = nx.from_numpy_array(sp.to_adjacency_matrix())
 
 
     plt.figure(figsize=(8, 8))
     position= nx.planar_layout(g, scale = 1, center=(0, 0))
   
+    filepath=""
     if labels_dict is not None:
         print(labels_dict)
         nx.draw(g, pos=position, labels = labels_dict, with_labels = True)
+        filepath = 'graph_plots/cubic/'
     else:
         nx.draw(g, pos=position)
         nx.draw_networkx_labels(g, position)
+        filepath = 'graph_plots/trian/'
 
-    filepath = 'graph_plots/trian/'
+    
     plt.savefig(filepath + name)
 
         
@@ -69,8 +70,6 @@ def plot_distance_from_saved(name, pltname, N, col = 'blue', same_plot = False):
         plt.clf()
         plt.close()
         
-# plot_distance_from_saved("next100x10000", "100 and 1000", 100, 'red', True)
-# plot_distance_from_saved("next1000x1000", "100 and 1000", 1000, 'blue', True)
         
 def plot_neighbours_from_saved(name, pltname, log=False ,same_plot = False):
     
@@ -177,7 +176,6 @@ def acquire_data_proc(num_of_nodes, num_of_iters, num_of_processes, name: str | 
     for i, (neigh, nlvl) in enumerate(results):
         hist = np.append(hist, neigh)
         levels = np.add(nlvl, levels)
-        print("lvl ", levels)
     if not name:
         name = ""
     n_name = name + str(num_of_nodes) + 'x' + str(num_of_iters)
@@ -235,4 +233,4 @@ def acquire_data(num_of_nodes, num_of_iters, name) -> np.array:
     plot_distance_from_saved(n_name, n_name, num_of_nodes)
 
 
-acquire_data_proc(100, 1000, 4, 'proc')
+
