@@ -50,6 +50,78 @@ def plot_histogram(hist: np.histogram, title: str, filepath: str | None = None):
         plt.savefig(filepath)
     else:
         plt.show()
+        
+# print("Generating random planar traingulation - no randomization")
+# start = time.time()
+# plg = PlanarTriangulation.random_planar_triangulation(100)
+# end = time.time()
+# print(end - start)
+# print()
+
+# print("Plotting triangulation")
+# start = time.time()
+# plot_graph(plg, 'planar')
+# end = time.time()
+# print(end - start)
+# print()
+
+# # print("Sweep triangulation")
+# start = time.time()
+# plg = plg.sweep()
+# end = time.time()
+# print(end - start)
+# print()
+
+# hist = plg.number_of_neighbours()
+# print("Sweeping ", 1)
+# plg.sweep()
+# for i in range(99):
+#     hist = np.append(hist, plg.number_of_neighbours())
+#     print("Sweeping ", i+1)
+#     plg.sweep()
+
+# with open('data/histogram100x100.npy', 'wb') as f:
+#     np.save(f, hist)
+
+with open('data/histogram100.npy', 'rb') as f:
+    a = np.load(f)
+#print(a)
+print(a.shape[0])
+plot_histogram(a, "histograms/100x10000")
+
+
+# print("Print swept triangulation")
+# start = time.time()
+# plot_graph(plg, 'planar_swept')
+# end = time.time()
+# print(end - start)
+# print()
+
+# print("Node neighbours")
+# start = time.time()
+# hist = plg.number_of_neighbours()
+# plot_histogram(hist, "histogram")
+# end = time.time()
+# print(end - start)
+# print()
+
+# f = open("myfile.txt", "w")
+# f.write(str(hist))
+# f.close()
+# print("Finding cubic dual to triangulation")
+# start = time.time()
+# cubic, labels = plg.find_cubic_dual_to_traingulation()
+# end = time.time()
+# print(end - start)
+# print()
+
+# print("Plotting cubic")
+# start = time.time()
+# plot_graph(cubic, 'cubic', labels)
+# end = time.time()
+# print(end - start)
+# print()
+
 
 
 def acquire_data(num_of_nodes, num_of_sweeps, filepath: str | None = None):
