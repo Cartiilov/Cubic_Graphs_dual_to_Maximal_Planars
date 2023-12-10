@@ -1,3 +1,4 @@
 src/data
 src/graph_plots
-src/hstograms
+src/histograms
+__pycache__/

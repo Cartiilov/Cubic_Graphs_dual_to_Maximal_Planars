@@ -5,6 +5,8 @@ import random
 import networkx as nx
 import queue as q
 import time
+import matplotlib.pyplot as plt
+
 
 
 class PlanarTriangulation():
@@ -51,18 +53,14 @@ class PlanarTriangulation():
             for j in range(area_matrix.shape[1]):
                 lb += str(area_matrix[i][j]) + " "
             lb += "]"
-            #print(lb)
             labels[i] = lb
-            #print(f'area_matrix[{i}]={area_matrix[i]}')
         labels[area_matrix.shape[0]] = " [ out ] "
-        #print("labels", labels)
         return Graph(cubic_adj_m), labels
 
     def insert_vertex(area_matrix: np.ndarray) -> np.ndarray:
         areas = area_matrix.shape[0]
         vertices = int((areas + 5)/2)
-        insertion = random.randint(0, areas-1)
-        #print("Inserting: ", insertion)
+        insertion = np.random.randint(0, areas)
         vertex1, vertex2, vertex3 = area_matrix[insertion][0], area_matrix[insertion][1], area_matrix[insertion][2]
 
         area_matrix[insertion] = [vertex1, vertex2, vertices]
@@ -74,39 +72,32 @@ class PlanarTriangulation():
         return area_matrix
 
     @staticmethod
-    def grow_triangulation(area_matrix: np.ndarray, vertices = None) -> np.ndarray:
+    def grow_triangulation(area_matrix: np.ndarray, vertices) -> np.ndarray:
         vertices -= 4
-        if vertices is None:
-            vertices = random.randint(20, 100) - 4
         for i in range(vertices):
             area_matrix = PlanarTriangulation.insert_vertex(area_matrix)
-
         return area_matrix
 
     def randomize_edge(self, area_matrix: np.ndarray, area_num, adj_matrix: np.ndarray) -> tuple(np.ndarray, bool):
         
-        row1 = random.randint(0, area_matrix.shape[0]-1)
+        row1 = np.random.randint(0, area_matrix.shape[0])
         random_area = area_matrix[row1]
-        tmp = random.randint(0, 2)
+        tmp = np.random.randint(0, 3)
         vertex1 = random_area[tmp]
-        # vertex2 = np.random.choice(np.delete(random_area, np.where(random_area == vertex1)))
-        # print(random_area, vertex1, vertex2)
         if tmp == 2:
             vertex2 = random_area[0]
         else:
             vertex2 = random_area[tmp+1]
-        # #print(vertex1, vertex2)
         i1 = np.where(np.any(area_matrix == vertex1, axis=1)) 
         i2 = np.where(np.any(area_matrix == vertex2, axis=1))
-        common_edge = set(i1[0]).intersection(i2[0])
-        if len(common_edge) == 0:
-            print("fail")
+        common_edge = np.intersect1d(i1, i2)
+        if len(common_edge) < 2:
             return area_matrix, False
 
-        row2 = common_edge.pop()
+        # row2 = common_edge.pop()
         elem1 = np.setdiff1d(random_area, [vertex1, vertex2])[0]
-        elem2 = np.setdiff1d(area_matrix[row2], [vertex1, vertex2])[0]
-        if not(adj_matrix[elem1][elem2] == 0 and elem1 != elem2):
+        elem2 = np.setdiff1d(area_matrix[common_edge[1]], [vertex1, vertex2])[0]
+        if (adj_matrix[elem1][elem2] == 1) or (elem1 == elem2):
             return area_matrix, False
     
         area1 = np.array([elem1, elem2, vertex1])
@@ -114,7 +105,7 @@ class PlanarTriangulation():
         area1.sort()
         area2.sort()
         area_matrix[row1] = area1
-        area_matrix[row2] = area2
+        area_matrix[common_edge[1]] = area2
 
         return area_matrix, True
 
@@ -126,29 +117,29 @@ class PlanarTriangulation():
         i1 = np.where(np.any(area_matrix == vertex1, axis = 1))
         i2 = np.where(np.any(area_matrix == vertex2, axis = 1))
         common_edge = np.intersect1d(i1, i2)
-
         if len(common_edge) < 2:
             return area_matrix, False
         
-        area_ids = np.random.choice(common_edge, size=2, replace=False)
-        reloc1 = np.setdiff1d(area_matrix[area_ids[0]], [vertex1, vertex2])[0]
-        reloc2 = np.setdiff1d(area_matrix[area_ids[1]], [vertex1, vertex2])[0]
+        reloc1 = np.setdiff1d(area_matrix[common_edge[0]], [vertex1, vertex2])[0]
+        reloc2 = np.setdiff1d(area_matrix[common_edge[1]], [vertex1, vertex2])[0]
         
-        if not(adj_matrix[reloc1][reloc2] == 0 and reloc1 != reloc2):
+        if adj_matrix[reloc1][reloc2] == 1 or (reloc1 == reloc2):
             return area_matrix, False
         
         area1 = np.array([reloc1, reloc2, vertex1])
         area2 = np.array([reloc1, reloc2, vertex2])
         area1.sort()
         area2.sort()
-        area_matrix[area_ids[0]] = area1
-        area_matrix[area_ids[1]] = area2
+        area_matrix[common_edge[0]] = area1
+        area_matrix[common_edge[1]] = area2
+        # area_ids = np.random.choice(common_edge, size=2, replace=False)
 
         return area_matrix, True
         
         
     def sweep(self) -> PlanarTriangulation:
         area_m = self._area_matrix
+        k = area_m.shape[0]
         adj_m = PlanarTriangulation.area_matrix_to_adjacency_matrix(
             area_m)
         nodes_num = adj_m.shape[0]
@@ -165,6 +156,25 @@ class PlanarTriangulation():
                 adj_m = PlanarTriangulation.area_matrix_to_adjacency_matrix(
                 area_m)
         return PlanarTriangulation(area_m)
+        
+    @staticmethod  
+    def sweep_from_file(graph_pth_in, graph_pth_out) -> None:
+        with open('data/graphs/'+ graph_pth_in +'.npy', 'rb') as f:
+            area_m = np.load(f)
+        plg = PlanarTriangulation(area_m)
+        plg.sweep()
+        with open('data/graphs/'+ graph_pth_out +'.npy', 'wb') as f:
+                np.save(f, plg._area_matrix)
+        return plg
+                
+    @staticmethod  
+    def find_cubic_from_file(graph_pth_in):
+        with open('data/graphs/'+ graph_pth_in +'.npy', 'rb') as f:
+            area_m = np.load(f)
+        plg = PlanarTriangulation(area_m)
+        g, t = plg.find_cubic_dual_to_triangulation()
+        return g, t
+        
         
     @staticmethod
     def area_matrix_to_adjacency_matrix(area_matrix: np.ndarray) -> np.ndarray:
@@ -185,7 +195,7 @@ class PlanarTriangulation():
         return adjacency_matrix
 
     @staticmethod
-    def random_planar_triangulation(number_f_nodes) -> PlanarTriangulation:
+    def random_planar_triangulation(number_f_nodes, save_name: str | None = None) -> PlanarTriangulation:
         
         area_matrix = np.array([[0, 1, 2],
                                 [0, 2, 3],
@@ -193,28 +203,32 @@ class PlanarTriangulation():
         
         area_matrix = PlanarTriangulation.grow_triangulation(
             area_matrix, number_f_nodes)
+        if area_matrix.shape[0] != 2*number_f_nodes-5:
+            raise Exception("sth went terrible")
+        if save_name:
+            with open('data/graphs/'+ save_name +'.npy', 'wb') as f:
+                np.save(f, area_matrix)
         return PlanarTriangulation(area_matrix)
 
     def number_of_neighbours(self):
         adj_m = self.to_adjacency_matrix()
         neigh_num = np.zeros(adj_m.shape[0], np.intc)
-        #histogram = np.zeros(adj_m.shape[0])
         for i in range(adj_m.shape[0]):
             for j in range(adj_m.shape[0]):
                 neigh_num[i] += adj_m[i][j]
-        #bin_edges = np.round(bin_edges,0)
         return neigh_num
     
         
     def graph_BFS(self, histogram: np.ndarray, num_of_nodes) -> np.ndarray:
-        # randomlist = random.sample(range(0, num_of_nodes-1), int(0.05*num_of_nodes))
+        # g, d = self.find_cubic_dual_to_triangulation()
+        randomlist = np.random.choice(range(0, num_of_nodes-1), replace=False, size=32)
         adj_matrix = self.to_adjacency_matrix()
         num_of_nodes = adj_matrix.shape[0]
          #find dual graph
         g = Graph(adj_matrix)
 
         adj_list = g.to_adjacency_list() # find adjacency list for graph
-        for i in range(num_of_nodes-1): # call BFS on every node
+        for i in randomlist: # call BFS on every node
             # histogram ->BFS works on one histogram for all iterations
             histogram = PlanarTriangulation.BFS(i, num_of_nodes, adj_list, histogram) 
 
