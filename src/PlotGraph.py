@@ -21,6 +21,7 @@ def plot_graph(
     position2= nx.planar_layout(g, scale = 1, center=(0, 0.03))
   
     filepath=""
+    filepath=""
     if labels_dict is not None:
         print(labels_dict)
         # nx.draw(g, pos=position2, labels = labels_dict, with_labels = True)
@@ -30,6 +31,9 @@ def plot_graph(
     else:
         nx.draw(g, pos=position)
         nx.draw_networkx_labels(g, position)
+        filepath = 'graph_plots/trian/'
+
+    
         filepath = 'graph_plots/trian/'
 
     
