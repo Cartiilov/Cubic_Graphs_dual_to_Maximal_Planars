@@ -24,7 +24,6 @@ def plot_graph(
     filepath=""
     if labels_dict is not None:
         print(labels_dict)
-        # nx.draw(g, pos=position2, labels = labels_dict, with_labels = True)
         nx.draw(g, pos=position)
         nx.draw_networkx_labels(g, position2, labels = labels_dict, font_color='red')
         filepath = 'graph_plots/cubic/'
@@ -95,19 +94,16 @@ def plot_neighbours_from_saved_normal(name, pltname, col='blue', same_plot = Fal
     unique_values, counts = np.unique(a, return_counts=True)
     counts = np.divide(counts, np.sum(counts))
     
-    # theory = np.ndarray( np.max(unique_values) + 1, np.float128)
-    theory = np.ndarray( 41, np.float128)
+    theory = np.ndarray( np.max(unique_values) + 1, np.float128)
     theory[0] = None
     theory[1] = None
     theory[2] = None
     
-    # for k in range(3, theory.shape[0]):
-    for k in range(3, 41):
+    for k in range(3, theory.shape[0]):
         theory[k] = 16*((3.0/16)**k)*(k-2)*math.factorial((2*k-2))/(math.factorial(k)*math.factorial((k-1)))
     
 
-    # theory_x = np.arange(0, theory.shape[0])
-    theory_x = np.arange(0, 41)
+    theory_x = np.arange(0, theory.shape[0])
 
 
     plt.scatter(unique_values, counts, color=col)
@@ -115,7 +111,7 @@ def plot_neighbours_from_saved_normal(name, pltname, col='blue', same_plot = Fal
     
     plt.xlim(0, 41)
     plt.title('Histogram sąsiadów')
-    plt.ylabel('Udział', fontsize=10)
+    plt.ylabel('P(k)', fontsize=10)
     plt.xlabel('Liczba sąsiadów', fontsize=10)
     plt.savefig('histograms/neighbours/normal/' + pltname)
     
@@ -132,18 +128,15 @@ def plot_neighbours_from_saved_log(name, pltname, col='blue', same_plot = False)
     unique_values, counts = np.unique(a, return_counts=True)
     counts = np.divide(counts, np.sum(counts))
     
-    # theory = np.ndarray( np.max(unique_values) + 1, np.float64)
     theory = np.ndarray( 44, np.float64)
     theory[0] = None
     theory[1] = None
     theory[2] = None
     
-    # for k in range(3, theory.shape[0]):
     for k in range(3, 44):
         theory[k] = 16*((3.0/16)**k)*(k-2)*math.factorial((2*k-2))/(math.factorial(k)*math.factorial((k-1)))
     
 
-    # theory_x = np.arange(0, theory.shape[0])
     theory_x = np.arange(0, 44)
     
     counts =-np.log10(counts)
@@ -155,7 +148,7 @@ def plot_neighbours_from_saved_log(name, pltname, col='blue', same_plot = False)
     
     plt.title('Histogram sąsiadów')
 
-    plt.ylabel('-log10(Udział)', fontsize=10)
+    plt.ylabel('-log P(k)', fontsize=10)
     plt.xlabel('Liczba sąsiadów', fontsize=10)
     plt.savefig('histograms/neighbours/log/' + pltname)
     
@@ -173,7 +166,6 @@ def proc_acquire(args):
     hist = plg.number_of_neighbours()
     
     g, d= plg.find_cubic_dual_to_triangulation()
-    # num_of_nodes_c = g._adjacency_matrix.shape[0]
     levels = np.zeros(num_of_nodes, np.int64)
     levels = plg.graph_BFS(levels, num_of_nodes)
 
@@ -184,9 +176,7 @@ def proc_acquire(args):
         plg.sweep()
     
     for i in range(int(num_of_sweeps/total_processes) - 1):
-        # print("Get neighbours")
         hist = np.append(hist, plg.number_of_neighbours())
-        # print("Get levels")
         
         levels = plg.graph_BFS(levels, num_of_nodes)
         print("Sweeping ", i+2)
@@ -206,7 +196,6 @@ def acquire_data_proc(num_of_nodes, num_of_iters, num_of_processes, name: str | 
     
     plg = PlanarTriangulation.random_planar_triangulation(num_of_nodes)
     g, d = plg.find_cubic_dual_to_triangulation()
-    # num_of_nodes_c = g._adjacency_matrix.shape[0]
     
     process_args = [(num_of_nodes, num_of_iters, i, num_of_processes) for i in range(num_of_processes)]
 
@@ -218,9 +207,7 @@ def acquire_data_proc(num_of_nodes, num_of_iters, num_of_processes, name: str | 
     for i, (neigh, nlvl) in enumerate(results):
         hist = np.append(hist, neigh)
         levels = np.add(nlvl, levels)
-    # for i, nlvl in enumerate(results):
-    #     # hist = np.append(hist, neigh)
-    #     levels = np.add(nlvl, levels)
+
     if not name:
         name = ""
     n_name = name + str(num_of_nodes) + 'x' + str(num_of_iters)
@@ -252,9 +239,9 @@ def acquire_data(num_of_nodes, num_of_iters, name) -> np.array:
     print(end - start)
     
     for i in range(num_of_iters - 1):
-        # print("Get neighbours")
+
         hist = np.append(hist, plg.number_of_neighbours())
-        # print("Get levels")
+
         levels = plg.graph_BFS(levels, num_of_nodes)
         print("Sweeping ", i+2)
         plg.sweep()
@@ -280,63 +267,6 @@ def acquire_data(num_of_nodes, num_of_iters, name) -> np.array:
     plot_distance_from_saved(n_name, n_name, num_of_nodes)
 
 
-
-# acquire_data_proc(33, 100, 5, 'cubasdic')
-
-# plot_distance_from_saved("cubic64x32000", "n_merge_cubic", 124, col='blue', same_plot=True)
-# plot_distance_from_saved("cubic128x16000", "n_merge_cubic", 252, col='orange', same_plot=True)
-# plot_distance_from_saved("cubic256x8000", "n_merge_cubic", 508, col='yellow', same_plot=True)
-# # plot_distance_from_saved("cubic512x4000", "merge_cubic", 1020, col='green', same_plot=True)
-# plot_distance_from_saved("cubic1024x2000", "n_merge_cubic", 2044, col='pink', same_plot=True)
-# plot_distance_from_saved("cubic2048x1000", "n_merge_cubic", 4092, col='black', same_plot=True)
-# plt.legend(["124", "252", "508", "508", "2044", "4092"], loc ="lower right") 
-# plt.savefig('histograms/distance/n_merge_cubic')
-# plt.clf()
-# plt.close()
-# plot_distance_from_saved("cubic4096x500", "merge", 4096, col='magenta', same_plot=False)
-# x = np.arange(0, 6, 0.1, dtype=float)
-# alpha = 2.8
-# y = 2./(alpha*alpha)*x*x*x*(np.exp(-x*x/(2*alpha)))
-
-plot_distance_from_saved("method64x32000", "n_merge", 64, col='blue', same_plot=True)
-plot_distance_from_saved("method128x16000", "n_merge", 128, col='orange', same_plot=True)
-plot_distance_from_saved("method256x8000", "n_merge", 256, col='yellow', same_plot=True)
-plot_distance_from_saved("method512x4000", "n_merge", 512, col='green', same_plot=True)
-plot_distance_from_saved("method1024x2000", "n_merge", 1024, col='pink', same_plot=True)
-plot_distance_from_saved("method2048x1000", "n_merge", 2048, col='black', same_plot=True)
-plt.legend(["64", "128", "256", "512", "1024", "2048"], loc ="lower right") 
-# plt.plot(x, y, color = 'magenta')
-plt.savefig('histograms/distance/n_merge')
-plt.clf()
-plt.close()
-# plot_distance_from_saved("cubic4096x500", "merge", 4096, col='magenta', same_plot=False)
-
-# plot_neighbours_from_saved_normal("method64x32000", "merge", col='blue', same_plot=True)
-# plot_neighbours_from_saved_normal("method128x16000", "merge", col='orange', same_plot=True)
-# plot_neighbours_from_saved_normal("method256x8000", "merge", col='yellow', same_plot=True)
-# plot_neighbours_from_saved_normal("method512x4000", "merge", col='green', same_plot=True)
-# plot_neighbours_from_saved_normal("method1024x2000", "merge", col='pink', same_plot=True)
-# plot_neighbours_from_saved_normal("method2048x1000", "merge", col='black', same_plot=True)
-# plot_neighbours_from_saved_normal("method4096x500", "merge", col='magenta', same_plot=False)
-
-# plot_neighbours_from_saved_log("method64x32000", "method64x32000", col='blue', same_plot=False)
-# plot_neighbours_from_saved_log("method128x16000", "method128x16000", col='blue', same_plot=False)
-# plot_neighbours_from_saved_log("method256x8000", "method256x8000", col='blue', same_plot=False)
-# plot_neighbours_from_saved_normal("method256x8000", "method256x8000", col='blue', same_plot=False)
-# plot_neighbours_from_saved_log("method512x4000", "merge", col='green', same_plot=True)
-# plot_neighbours_from_saved_log("method1024x2000", "merge", col='pink', same_plot=True)
-# plot_neighbours_from_saved_log("method2048x1000", "merge", col='black', same_plot=True)
-# plot_neighbours_from_saved_log("method4096x500", "merge", col='magenta', same_plot=False)
-
-# plot_neighbours_from_saved_normal("method1024x2000", "method1024x2000")
-# plot_neighbours_from_saved_normal("method4096x500", "method4096x500")
-# plot_neighbours_from_saved_normal("method2048x1000", "method2048x1000")
-# plot_neighbours_from_saved_log("method4096x500", "method4096x500")
-# plot_neighbours_from_saved_log("method2048x1000", "method2048x1000")
-
-# plg = PlanarTriangulation.random_planar_triangulation(8, 'name')
-# plot_graph(plg, 'trian')
-# g, d = plg.find_cubic_dual_to_triangulation()
-# plot_graph(g, 'cubic', d)
-
-
+plg = PlanarTriangulation.random_planar_triangulation(10)
+g = plg.find_cubic_dual_to_triangulation()
+acquire_data(33, 10, 'grgr')

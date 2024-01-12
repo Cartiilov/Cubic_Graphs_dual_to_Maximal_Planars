@@ -94,7 +94,6 @@ class PlanarTriangulation():
         if len(common_edge) < 2:
             return area_matrix, False
 
-        # row2 = common_edge.pop()
         elem1 = np.setdiff1d(random_area, [vertex1, vertex2])[0]
         elem2 = np.setdiff1d(area_matrix[common_edge[1]], [vertex1, vertex2])[0]
         if (adj_matrix[elem1][elem2] == 1) or (elem1 == elem2):
@@ -132,7 +131,6 @@ class PlanarTriangulation():
         area2.sort()
         area_matrix[common_edge[0]] = area1
         area_matrix[common_edge[1]] = area2
-        # area_ids = np.random.choice(common_edge, size=2, replace=False)
 
         return area_matrix, True
         
@@ -220,7 +218,6 @@ class PlanarTriangulation():
     
         
     def graph_BFS(self, histogram: np.ndarray, num_of_nodes) -> np.ndarray:
-        # g, d = self.find_cubic_dual_to_triangulation()
         randomlist = np.random.choice(range(0, num_of_nodes-1), replace=False, size=32)
         adj_matrix = self.to_adjacency_matrix()
         num_of_nodes = adj_matrix.shape[0]
