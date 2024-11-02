@@ -2,6 +2,9 @@
 ## Overview
 This project explores cubic graphs that are dual to maximal planar graphs. The aim is to analyze their properties, generate examples, and provide tools for further research. This work is part of an engineering thesis.
 
+![6before](https://github.com/user-attachments/assets/4549add6-433b-47f4-a5ee-e1aa72f23f66)
+
+
 ## Table of Contents
 - [Introduction](#introduction)
 - [Project Goal](#project-goal)
